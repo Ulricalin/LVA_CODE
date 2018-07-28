@@ -15,21 +15,25 @@ import soot.toolkits.graph.UnitGraph;
 import soot.jimple.internal.*;
 import java.util.*;
 import java.io.*; 
+
+
+
+
 public class LvaMain
 {
-	public static void main(String[] args)   {
+	public LvaMain(String classPath,String mainClass,Boolean type, String name)   {
 		
-		if (args.length < 2) {
-			System.out.println("Usage: java lva.LvaMain class_to_analyse class_path");
-			System.exit(1);
-		} else {
-			System.out.println("Analyzing class: "+args[0]);
-		}
+// 		if (args.length < 2) {
+// 			System.out.println("Usage: java lva.LvaMain class_to_analyse class_path");
+// 			System.exit(1);
+// 		} else {
+// 			System.out.println("Analyzing class: "+args[0]);
+// 		}
 
-		String mainClass = args[0];
+		// String mainClass = args[0];
 
 
-		String classPath = args[1]; // 此处的路径是你待分析的类所在的路径
+		// String classPath = args[1]; // 此处的路径是你待分析的类所在的路径
 		
 
 		//Set up arguments for Soot
@@ -42,7 +46,7 @@ public class LvaMain
 			mainClass 
 		};
 
-		AnalysisTransformer analysisTransformer = new AnalysisTransformer();
+		AnalysisTransformer analysisTransformer = new AnalysisTransformer(type,name);
 		PackManager.v().getPack("wjtp").add(new Transform("wjtp.dfa", analysisTransformer));
 
 		// 调用sootMain

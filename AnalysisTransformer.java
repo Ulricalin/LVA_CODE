@@ -19,65 +19,181 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class AnalysisTransformer extends SceneTransformer   
 {
+	// 1-analysis all method, 0-analysis one method
+	private boolean analysis_type;
+
+	private String methodName;
+
+	public AnalysisTransformer() {
+		super();
+		analysis_type = true;
+		methodName = "";
+	}
+	public AnalysisTransformer(boolean type, String name) {
+		super();
+		analysis_type = type;
+		methodName = name;
+	}
 
 	@Override
-	protected void internalTransform(String arg0, Map arg1)   {
+	protected void internalTransform(String arg0, Map arg1) {
 
-		// 我们首先获取Main方法，因为我们的分析应当从Main方法开始
-		SootMethod sMethod = Scene.v().getMainMethod();
-
-		// 获取当前Main方法中ActiveBody
-		// ActiveBody: The body of a method contains the statements inside that method as well as 
-		// the `local variable` definitions and the exception handlers.
-		UnitGraph graph = new BriefUnitGraph(sMethod.getActiveBody());
-
-		// 执行活跃变量分析
-		LiveVariableAnalysis analysis = new LiveVariableAnalysis(graph);
-
+		if (analysis_type == true) {
+            //遍历类中的每一个方法
+        	int rowIndex = 0;
 		
-		Iterator<Unit> unitIt = graph.iterator();
+			XSSFWorkbook wb = new XSSFWorkbook();  
+			XSSFSheet sheet = wb.createSheet("sheet1");
+			XSSFRow row = sheet.createRow(rowIndex++);
+	        row.createCell(0).setCellValue("Basic Block");
+	        row.createCell(1).setCellValue("入口处活跃变量");
+	        row.createCell(2).setCellValue("出口处活跃变量");
+	        for (SootClass sootClass : Scene.v().getApplicationClasses()){
+	            for (SootMethod sootMethod : sootClass.getMethods())
+	            {
+	                if (!sootMethod.hasActiveBody())
+	                {
+	                    continue;
+	                }
+	 
+	                //遍历方法中的每一行,检查url
+	                UnitGraph graph = new BriefUnitGraph(sootMethod.getActiveBody());
 
+					// Perform LV Analysis on the Graph
+					LiveVariableAnalysis analysis = new LiveVariableAnalysis(graph);
 
-		int rowIndex = 0;
-	
-		XSSFWorkbook wb = new XSSFWorkbook();  
-		XSSFSheet sheet = wb.createSheet("sheet1");
-		XSSFRow row = sheet.createRow(rowIndex++);
-        row.createCell(0).setCellValue("Basic Block");
-        row.createCell(1).setCellValue("入口处活跃变量");
-        row.createCell(2).setCellValue("出口处活跃变量");
-		while (unitIt.hasNext()) {
-			Unit s = unitIt.next();
-			row = sheet.createRow(rowIndex++);
-			String entryVals = "";
-			String exitVals = "";
-			row.createCell(0).setCellValue(s.toString());
+					// Print live variables at the entry and exit of each node
+					
+					Iterator<Unit> unitIt = graph.iterator();
 
-			FlowSet<Local> set = analysis.getFlowBefore(s);
+					// int rowIndex = 0;
+				
+					// XSSFWorkbook wb = new XSSFWorkbook();  
+					// XSSFSheet sheet = wb.createSheet("sheet1");
+					// XSSFRow row = sheet.createRow(rowIndex++);
+			  //       row.createCell(0).setCellValue("Basic Block");
+			  //       row.createCell(1).setCellValue("入口处活跃变量");
+			  //       row.createCell(2).setCellValue("出口处活跃变量");
+					while (unitIt.hasNext()) {
+						Unit s = unitIt.next();
+						row = sheet.createRow(rowIndex++);
+						String entryVals = "";
+						String exitVals = "";
+						row.createCell(0).setCellValue(s.toString());
 
-			for (Local local: set) {
-				entryVals += local + " ";
+						FlowSet<Local> set = analysis.getFlowBefore(s);
+
+						for (Local local: set) {
+							entryVals += local + " ";
+						}
+
+						set = analysis.getFlowAfter(s);
+						
+						System.out.print("]\t[exit: ");
+						for (Local local: set) {
+							exitVals += local + " ";
+						}
+			            row.createCell(1).setCellValue(entryVals);
+			            row.createCell(2).setCellValue(exitVals);
+					}
+					try {
+						FileOutputStream fileOut = new FileOutputStream("./result.xlsx");  
+						// write this workbook to an Outputstream.  
+						wb.write(fileOut);  
+						fileOut.flush();  
+						fileOut.close();  
+					}
+					catch (IOException ex) {
+						System.out.print("IO exception occurred");
+					}
+				}
 			}
+		} else {
 
-			set = analysis.getFlowAfter(s);
-			
-			System.out.print("]\t[exit: ");
-			for (Local local: set) {
-				exitVals += local + " ";
-			}
-            row.createCell(1).setCellValue(entryVals);
-            row.createCell(2).setCellValue(exitVals);
-		}
-		try {
-			FileOutputStream fileOut = new FileOutputStream("./result.xlsx");  
-			// write this workbook to an Outputstream.  
-			wb.write(fileOut);  
-			fileOut.flush();  
-			fileOut.close();  
-		}
-		catch (IOException ex) {
-			System.out.print("IO exception occurred");
-		}
+			int rowIndex = 0;
 		
+			XSSFWorkbook wb = new XSSFWorkbook();  
+			XSSFSheet sheet = wb.createSheet("sheet1");
+			XSSFRow row = sheet.createRow(rowIndex++);
+	        row.createCell(0).setCellValue("Basic Block");
+	        row.createCell(1).setCellValue("入口处活跃变量");
+	        row.createCell(2).setCellValue("出口处活跃变量");
+
+			for (SootClass sootClass : Scene.v().getApplicationClasses()){
+				// 我们首先获取Main方法，因为我们的分析应当从Main方法开始
+				SootMethod sMethod = sootClass.getMethodByName(methodName);
+
+				// 获取当前Main方法中ActiveBody
+				// ActiveBody: The body of a method contains the statements inside that method as well as 
+				// the `local variable` definitions and the exception handlers.
+				UnitGraph graph = new BriefUnitGraph(sMethod.getActiveBody());
+
+				// 执行活跃变量分析
+				LiveVariableAnalysis analysis = new LiveVariableAnalysis(graph);
+
+				
+				Iterator<Unit> unitIt = graph.iterator();
+
+				// while (unitIt.hasNext()) {
+				// 	Unit s = unitIt.next();
+
+				// 	System.out.print(s);
+					
+				// 	int d = 40 - s.toString().length();
+				// 	while (d > 0) {
+				// 		System.out.print(".");
+				// 		d--;
+				// 	}
+					
+				// 	FlowSet<Local> set = analysis.getFlowBefore(s);
+
+				// 	System.out.print("\t[entry: ");
+				// 	for (Local local: set) {
+				// 		System.out.print(local+" ");
+				// 	}
+
+				// 	set = analysis.getFlowAfter(s);
+					
+				// 	System.out.print("]\t[exit: ");
+				// 	for (Local local: set) {
+				// 		System.out.print(local+" ");
+				// 	}
+				// 	System.out.println("]");
+				// }
+				while (unitIt.hasNext()) {
+					Unit s = unitIt.next();
+					row = sheet.createRow(rowIndex++);
+					String entryVals = "";
+					String exitVals = "";
+					row.createCell(0).setCellValue(s.toString());
+
+					FlowSet<Local> set = analysis.getFlowBefore(s);
+
+					for (Local local: set) {
+						entryVals += local + " ";
+					}
+
+					set = analysis.getFlowAfter(s);
+					
+					System.out.print("]\t[exit: ");
+					for (Local local: set) {
+						exitVals += local + " ";
+					}
+		            row.createCell(1).setCellValue(entryVals);
+		            row.createCell(2).setCellValue(exitVals);
+				}
+				try {
+					FileOutputStream fileOut = new FileOutputStream("./result.xlsx");  
+					// write this workbook to an Outputstream.  
+					wb.write(fileOut);  
+					fileOut.flush();  
+					fileOut.close();  
+				}
+				catch (IOException ex) {
+					System.out.print("IO exception occurred");
+				}
+			}
+		}
+
 	}
 }
