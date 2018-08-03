@@ -78,7 +78,7 @@ public class LvaRunner extends JFrame implements ActionListener{
 
 
 		f2.setTitle("活跃变量");
-		f2.setSize(333, 288);
+		f2.setSize(1280,1024);
 		f2.setLocation(200,200);
 		//f2.setVisible(true);
 		f2.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -131,7 +131,7 @@ public class LvaRunner extends JFrame implements ActionListener{
         jSplitPane1.setBottomComponent(jSplitPane2);//添加面板2
         jSplitPane2.setLeftComponent(panel2);
         jSplitPane2.setRightComponent(panel3);
-        jSplitPane2.setDividerLocation(100);
+        jSplitPane2.setDividerLocation(600);
         f2.setContentPane(jSplitPane1);
 	}
 	public void actionPerformed(ActionEvent e){
