@@ -24,15 +24,22 @@ public class AnalysisTransformer extends SceneTransformer
 
 	private String methodName;
 
+	private String output;
+
 	public AnalysisTransformer() {
 		super();
 		analysis_type = true;
 		methodName = "";
+		output = "";
 	}
 	public AnalysisTransformer(boolean type, String name) {
 		super();
 		analysis_type = type;
 		methodName = name;
+	}
+
+	public String getOutput() {
+		return output;
 	}
 
 	@Override
@@ -42,12 +49,12 @@ public class AnalysisTransformer extends SceneTransformer
             //遍历类中的每一个方法
         	int rowIndex = 0;
 		
-			XSSFWorkbook wb = new XSSFWorkbook();  
-			XSSFSheet sheet = wb.createSheet("sheet1");
-			XSSFRow row = sheet.createRow(rowIndex++);
-	        row.createCell(0).setCellValue("Basic Block");
-	        row.createCell(1).setCellValue("入口处活跃变量");
-	        row.createCell(2).setCellValue("出口处活跃变量");
+			// XSSFWorkbook wb = new XSSFWorkbook();  
+			// XSSFSheet sheet = wb.createSheet("sheet1");
+			// XSSFRow row = sheet.createRow(rowIndex++);
+	  //       row.createCell(0).setCellValue("Basic Block");
+	  //       row.createCell(1).setCellValue("入口处活跃变量");
+	  //       row.createCell(2).setCellValue("出口处活跃变量");
 	        for (SootClass sootClass : Scene.v().getApplicationClasses()){
 	            for (SootMethod sootMethod : sootClass.getMethods())
 	            {
@@ -74,50 +81,78 @@ public class AnalysisTransformer extends SceneTransformer
 			  //       row.createCell(0).setCellValue("Basic Block");
 			  //       row.createCell(1).setCellValue("入口处活跃变量");
 			  //       row.createCell(2).setCellValue("出口处活跃变量");
+					// while (unitIt.hasNext()) {
+					// 	Unit s = unitIt.next();
+					// 	row = sheet.createRow(rowIndex++);
+					// 	String entryVals = "";
+					// 	String exitVals = "";
+					// 	row.createCell(0).setCellValue(s.toString());
+
+					// 	FlowSet<Local> set = analysis.getFlowBefore(s);
+
+					// 	for (Local local: set) {
+					// 		entryVals += local + " ";
+					// 	}
+
+					// 	set = analysis.getFlowAfter(s);
+						
+					// 	System.out.print("]\t[exit: ");
+					// 	for (Local local: set) {
+					// 		exitVals += local + " ";
+					// 	}
+			  //           row.createCell(1).setCellValue(entryVals);
+			  //           row.createCell(2).setCellValue(exitVals);
+					// }
+					// try {
+					// 	FileOutputStream fileOut = new FileOutputStream("./result.xlsx");  
+					// 	// write this workbook to an Outputstream.  
+					// 	wb.write(fileOut);  
+					// 	fileOut.flush();  
+					// 	fileOut.close();  
+					// }
+					// catch (IOException ex) {
+					// 	System.out.print("IO exception occurred");
+					// }
+					output += sootMethod.getName() +"\n";
 					while (unitIt.hasNext()) {
 						Unit s = unitIt.next();
-						row = sheet.createRow(rowIndex++);
-						String entryVals = "";
-						String exitVals = "";
-						row.createCell(0).setCellValue(s.toString());
 
+						output += s;
+						
+						int d = 70 - s.toString().length();
+						while (d > 0) {
+							output += ".";
+							d--;
+						}
+						
 						FlowSet<Local> set = analysis.getFlowBefore(s);
 
+						output += "\t[entry: ";
 						for (Local local: set) {
-							entryVals += local + " ";
+							output += local + " ";
 						}
 
 						set = analysis.getFlowAfter(s);
-						
-						System.out.print("]\t[exit: ");
+						output += "]\t[exit: ";
+
 						for (Local local: set) {
-							exitVals += local + " ";
+							output += local + " ";
 						}
-			            row.createCell(1).setCellValue(entryVals);
-			            row.createCell(2).setCellValue(exitVals);
+						output += "]\n";
 					}
-					try {
-						FileOutputStream fileOut = new FileOutputStream("./result.xlsx");  
-						// write this workbook to an Outputstream.  
-						wb.write(fileOut);  
-						fileOut.flush();  
-						fileOut.close();  
-					}
-					catch (IOException ex) {
-						System.out.print("IO exception occurred");
-					}
+					output += "\n\n";
 				}
 			}
 		} else {
 
 			int rowIndex = 0;
 		
-			XSSFWorkbook wb = new XSSFWorkbook();  
-			XSSFSheet sheet = wb.createSheet("sheet1");
-			XSSFRow row = sheet.createRow(rowIndex++);
-	        row.createCell(0).setCellValue("Basic Block");
-	        row.createCell(1).setCellValue("入口处活跃变量");
-	        row.createCell(2).setCellValue("出口处活跃变量");
+			// XSSFWorkbook wb = new XSSFWorkbook();  
+			// XSSFSheet sheet = wb.createSheet("sheet1");
+			// XSSFRow row = sheet.createRow(rowIndex++);
+	  //       row.createCell(0).setCellValue("Basic Block");
+	  //       row.createCell(1).setCellValue("入口处活跃变量");
+	  //       row.createCell(2).setCellValue("出口处活跃变量");
 
 			for (SootClass sootClass : Scene.v().getApplicationClasses()){
 				// 我们首先获取Main方法，因为我们的分析应当从Main方法开始
@@ -133,65 +168,66 @@ public class AnalysisTransformer extends SceneTransformer
 
 				
 				Iterator<Unit> unitIt = graph.iterator();
+				output += sMethod.getName() +"\n";
+				while (unitIt.hasNext()) {
+					Unit s = unitIt.next();
 
+					output += s;
+					
+					int d = 70 - s.toString().length();
+					while (d > 0) {
+						output += ".";
+						d--;
+					}
+					
+					FlowSet<Local> set = analysis.getFlowBefore(s);
+
+					output += "\t[entry: ";
+					for (Local local: set) {
+						output += local + " ";
+					}
+
+					set = analysis.getFlowAfter(s);
+					output += "]\t[exit: ";
+					//System.out.print("]\t[exit: ");
+					for (Local local: set) {
+						output += local + " ";
+					}
+					output += "]\n";
+				}
+				output += "\n\n";
 				// while (unitIt.hasNext()) {
 				// 	Unit s = unitIt.next();
+				// 	row = sheet.createRow(rowIndex++);
+				// 	String entryVals = "";
+				// 	String exitVals = "";
+				// 	row.createCell(0).setCellValue(s.toString());
 
-				// 	System.out.print(s);
-					
-				// 	int d = 40 - s.toString().length();
-				// 	while (d > 0) {
-				// 		System.out.print(".");
-				// 		d--;
-				// 	}
-					
 				// 	FlowSet<Local> set = analysis.getFlowBefore(s);
 
-				// 	System.out.print("\t[entry: ");
 				// 	for (Local local: set) {
-				// 		System.out.print(local+" ");
+				// 		entryVals += local + " ";
 				// 	}
 
 				// 	set = analysis.getFlowAfter(s);
 					
 				// 	System.out.print("]\t[exit: ");
 				// 	for (Local local: set) {
-				// 		System.out.print(local+" ");
+				// 		exitVals += local + " ";
 				// 	}
-				// 	System.out.println("]");
+		  //           row.createCell(1).setCellValue(entryVals);
+		  //           row.createCell(2).setCellValue(exitVals);
 				// }
-				while (unitIt.hasNext()) {
-					Unit s = unitIt.next();
-					row = sheet.createRow(rowIndex++);
-					String entryVals = "";
-					String exitVals = "";
-					row.createCell(0).setCellValue(s.toString());
-
-					FlowSet<Local> set = analysis.getFlowBefore(s);
-
-					for (Local local: set) {
-						entryVals += local + " ";
-					}
-
-					set = analysis.getFlowAfter(s);
-					
-					System.out.print("]\t[exit: ");
-					for (Local local: set) {
-						exitVals += local + " ";
-					}
-		            row.createCell(1).setCellValue(entryVals);
-		            row.createCell(2).setCellValue(exitVals);
-				}
-				try {
-					FileOutputStream fileOut = new FileOutputStream("./result.xlsx");  
-					// write this workbook to an Outputstream.  
-					wb.write(fileOut);  
-					fileOut.flush();  
-					fileOut.close();  
-				}
-				catch (IOException ex) {
-					System.out.print("IO exception occurred");
-				}
+				// try {
+				// 	FileOutputStream fileOut = new FileOutputStream("./result.xlsx");  
+				// 	// write this workbook to an Outputstream.  
+				// 	wb.write(fileOut);  
+				// 	fileOut.flush();  
+				// 	fileOut.close();  
+				// }
+				// catch (IOException ex) {
+				// 	System.out.print("IO exception occurred");
+				// }
 			}
 		}
 

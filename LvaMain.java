@@ -21,6 +21,11 @@ import java.io.*;
 
 public class LvaMain
 {
+	private AnalysisTransformer analysisTransformer;
+
+	public LvaMain() {
+
+	}
 	public LvaMain(String classPath,String mainClass,Boolean type, String name)   {
 		
 // 		if (args.length < 2) {
@@ -46,11 +51,16 @@ public class LvaMain
 			mainClass 
 		};
 
-		AnalysisTransformer analysisTransformer = new AnalysisTransformer(type,name);
+		analysisTransformer = new AnalysisTransformer(type,name);
 		PackManager.v().getPack("wjtp").add(new Transform("wjtp.dfa", analysisTransformer));
 
 		// 调用sootMain
 		soot.Main.main(sootArgs);
 
+		//output = analysisTransformer.getOutput();
+	}
+
+	public String getOutput() {
+		return analysisTransformer.getOutput();
 	}
 }
