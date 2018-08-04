@@ -27,7 +27,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-
+import java.lang.ProcessBuilder;
 public class LvaRunner extends JFrame implements ActionListener{
 	JFrame f1 = new JFrame();
 	JFrame f2 = new JFrame();
@@ -37,7 +37,9 @@ public class LvaRunner extends JFrame implements ActionListener{
 	//return f1 to choose file
 	JButton back = new JButton("back");
 	//get the cfg
-	JButton cfg = new JButton("cfg");
+	JButton cfg = new JButton("getCFG");
+	//save
+	JButton save = new JButton("save");
 	JRadioButton radioBtn01 = new JRadioButton("analysis all method");
     JRadioButton radioBtn02 = new JRadioButton("analysis one method");
     ButtonGroup btnGroup = new ButtonGroup();
@@ -55,6 +57,7 @@ public class LvaRunner extends JFrame implements ActionListener{
     String output;
     JSplitPane jSplitPane1 =new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 	JSplitPane jSplitPane2 =new JSplitPane();
+
 	public static void main(String[] args) {
 
 		new LvaRunner();
@@ -85,6 +88,12 @@ public class LvaRunner extends JFrame implements ActionListener{
 
 		
 		JPanel panel1 = new JPanel();
+
+		back.setActionCommand("back");
+        back.setBackground(Color.BLUE);
+		panel1.add(back);
+        back.addActionListener(this);
+
 		//panel.setLayout(new BorderLayout());
         // 添加面板
         //f2.add(panel);
@@ -110,15 +119,18 @@ public class LvaRunner extends JFrame implements ActionListener{
         panel1.add(start);
         start.addActionListener(this);
 
-        back.setActionCommand("back");
-        back.setBackground(Color.BLUE);
-		panel1.add(back);
-        back.addActionListener(this);
+        
 
         cfg.setActionCommand("cfg");
         cfg.setBackground(Color.YELLOW);
 		panel1.add(cfg);
         cfg.addActionListener(this);
+
+        save.setActionCommand("save");
+        save.setBackground(Color.PINK);
+		panel1.add(save);
+        save.addActionListener(this);
+        save.setEnabled(false);
 
         JPanel panel2 = new JPanel();
         panel2.setLayout(new BorderLayout());
@@ -127,6 +139,8 @@ public class LvaRunner extends JFrame implements ActionListener{
         JPanel panel3 = new JPanel();
         panel3.setLayout(new BorderLayout());
         panel3.add(new JScrollPane(result),BorderLayout.CENTER);
+
+
         jSplitPane1.setTopComponent(panel1);//布局中添加组件 ，面板1
         jSplitPane1.setBottomComponent(jSplitPane2);//添加面板2
         jSplitPane2.setLeftComponent(panel2);
@@ -137,7 +151,7 @@ public class LvaRunner extends JFrame implements ActionListener{
 	public void actionPerformed(ActionEvent e){
 		if (e.getActionCommand().equals("open")){
 			JFileChooser jf = new JFileChooser();
-
+			jf.setCurrentDirectory(new File("."));
 			FileNameExtensionFilter filter = new FileNameExtensionFilter(
 				"Class文件(*.class)", "class");
 			jf.setFileFilter(filter);
@@ -160,14 +174,42 @@ public class LvaRunner extends JFrame implements ActionListener{
 			f1.setVisible(false);
 		} 
 		else if (e.getActionCommand().equals("start")){
-			LvaMain lva;
+			Runtime run = Runtime.getRuntime();//返回与当前 Java 应用程序相关的运行时对象 
+			String cmd = "java lva.LvaMain ";
 			if (radioBtn01.isSelected()) {
-				lva = new LvaMain(classPath,mainClass,true,"");
+				cmd += classPath+" "+mainClass+" true "+"all";
 			} else {
-				lva = new LvaMain(classPath,mainClass,false,methodNameText.getText());
+				cmd += classPath+" "+mainClass+" false "+ methodNameText.getText();
 			}
-			output = lva.getOutput();
+			
+			output = "";
+	        try {  
+	            Process p = run.exec(cmd);// 启动另一个进程来执行命令  
+	            BufferedInputStream in = new BufferedInputStream(p.getInputStream());  
+	            BufferedReader inBr = new BufferedReader(new InputStreamReader(in));  
+	            String lineStr;  
+	            while ((lineStr = inBr.readLine()) != null)  
+	                //获得命令执行后在控制台的输出信息  
+	                output += lineStr+"\n";
+	            //检查命令是否执行失败。  
+	            if (p.waitFor() != 0) {  
+	                if (p.exitValue() == 1)//p.exitValue()==0表示正常结束，1：非正常结束  
+	                    System.err.println("命令执行失败!");  
+	            }  
+	            inBr.close();  
+	            in.close();  
+	        } catch (Exception e1) {  
+	            e1.printStackTrace();  
+	        } 
+			// LvaMain lva;
+			// if (radioBtn01.isSelected()) {
+			// 	lva = new LvaMain(classPath,mainClass,true,"");
+			// } else {
+			// 	lva = new LvaMain(classPath,mainClass,false,methodNameText.getText());
+			// }
+			// output = lva.getOutput();
 			result.setText(output);
+			save.setEnabled(true);
 			//f1.setVisible(true);
 			//f2.setVisible(false);
 		}
@@ -197,56 +239,110 @@ public class LvaRunner extends JFrame implements ActionListener{
 	            e1.printStackTrace();  
 	        } 
 
+	        //String path = classPath
+	        cmd = "find" + " ./sootOutput/" + mainClass + " -type f -name \"* *\" -print "
+	         		+ "| "
+					+ "while read name; do\n"
+					+ "na=$(echo $name | tr ' ' '_')\n"
+					+ "mv \"$name\" \"$na\"\n"
+					+ "done\n";
+			//System.out.println(cmd);
+	        try { 
+	        	List<String> cmds = new ArrayList<String>();
+				cmds.add("sh");
+				cmds.add("-c");
+				cmds.add(cmd);
+				ProcessBuilder pb =new ProcessBuilder(cmds);
+				Process p = pb.start();
+	            //Process p = run.exec(new String[] {"/bin/sh", "-c", cmd});// 启动另一个进程来执行命令  
+	            BufferedInputStream in = new BufferedInputStream(p.getInputStream());  
+	            BufferedReader inBr = new BufferedReader(new InputStreamReader(in));  
+	            String lineStr; 
+	            while ((lineStr = inBr.readLine()) != null) {
 
-	  //       String cmd = "find" + " ./sootOutput/" + mainClass + " -type f -name \"* *\" -print " + "|\n"
-			// 		+ "while read name; do\n"
-			// 		+ "na=$(echo $name | tr ' ' '_')\n"
-			// 		+ "if [[ $name != $na ]]; then\n"
-			// 		+ "mv \"$name\" \"$na\"\n"
-			// 		+ "fi\n"
-			// 		+ "done\n";
-			// System.out.println(cmd);
-	  //       try {  
-	  //           Process p = run.exec(cmd);// 启动另一个进程来执行命令  
-	  //           BufferedInputStream in = new BufferedInputStream(p.getInputStream());  
-	  //           BufferedReader inBr = new BufferedReader(new InputStreamReader(in));  
-	  //           String lineStr;  
-	  //           while ((lineStr = inBr.readLine()) != null) {
-	  //           	//获得命令执行后在控制台的输出信息  
-	  //         //   	String dotname = lineStr.substring(IndexOf(" ")+1,)
-	  //         //   	cmd = "java soot.tools.CFGViewer -cp " + classPath + " -pp " +  mainClass + " -d sootOutput/" + mainClass;
-			//         // try {  
-			//         //     Process p = run.exec(cmd);// 启动另一个进程来执行命令  
-			//         //     BufferedInputStream in = new BufferedInputStream(p.getInputStream());  
-			//         //     BufferedReader inBr = new BufferedReader(new InputStreamReader(in));  
-			//         //     String lineStr;  
-			//         //     while ((lineStr = inBr.readLine()) != null)  
-			//         //         //获得命令执行后在控制台的输出信息  
-			//         //         System.out.println(lineStr);// 打印输出信息  
-			//         //     //检查命令是否执行失败。  
-			//         //     if (p.waitFor() != 0) {  
-			//         //         if (p.exitValue() == 1)//p.exitValue()==0表示正常结束，1：非正常结束  
-			//         //             System.err.println("命令执行失败!");  
-			//         //     }  
-			//         //     inBr.close();  
-			//         //     in.close();  
-			//         // } catch (Exception e1) {  
-			//         //     e1.printStackTrace();  
-			//         // } 
-			//         //获得命令执行后在控制台的输出信息  
-	  //               System.out.println(lineStr);// 打印输出信息  
-	  //           }
+	                System.out.println(lineStr);// 打印输出信息  
+	            }
 
-	  //           //检查命令是否执行失败。  
-	  //           if (p.waitFor() != 0) {  
-	  //               if (p.exitValue() == 1)//p.exitValue()==0表示正常结束，1：非正常结束  
-	  //                   System.err.println("命令执行失败!");  
-	  //           }  
-	  //           inBr.close();  
-	  //           in.close();  
-	  //       } catch (Exception e1) {  
-	  //           e1.printStackTrace();  
-	  //       } 
+	            //检查命令是否执行失败。  
+	            if (p.waitFor() != 0) {  
+	                if (p.exitValue() == 1)//p.exitValue()==0表示正常结束，1：非正常结束  
+	                    System.err.println("命令执行失败!");  
+	                 
+	            }  
+	            inBr.close();  
+	            in.close();  
+	        } catch (Exception e1) {  
+	            e1.printStackTrace();  
+	        }
+	        cmd = "find" + " ./sootOutput/" + mainClass + " -type f -name \"*.dot\" -print "
+	         		+ "| "
+					+ "while read name; do\n"
+					+ "na=$(echo $name\".png\")\n"
+					+ "dot -Tpng -o $na $name\n"
+					+ "eog $na\n"
+					+ "done\n";
+			//System.out.println(cmd);
+	        try { 
+	        	List<String> cmds = new ArrayList<String>();
+				cmds.add("sh");
+				cmds.add("-c");
+				cmds.add(cmd);
+				ProcessBuilder pb =new ProcessBuilder(cmds);
+				Process p = pb.start();
+	            //Process p = run.exec(new String[] {"/bin/sh", "-c", cmd});// 启动另一个进程来执行命令  
+	            BufferedInputStream in = new BufferedInputStream(p.getInputStream());  
+	            BufferedReader inBr = new BufferedReader(new InputStreamReader(in));  
+	            String lineStr; 
+	            while ((lineStr = inBr.readLine()) != null) {
+
+	                System.out.println(lineStr);// 打印输出信息  
+	            }
+
+	            //检查命令是否执行失败。  
+	            if (p.waitFor() != 0) {  
+	                if (p.exitValue() == 1)//p.exitValue()==0表示正常结束，1：非正常结束  
+	                    System.err.println("命令执行失败!");  
+	                
+	            }  
+	            inBr.close();  
+	            in.close();  
+	        } catch (Exception e1) {  
+	            e1.printStackTrace();  
+	        }
+		}
+		else if (e.getActionCommand().equals("save")) {
+			//弹出文件选择框
+			JFileChooser chooser = new JFileChooser();
+			chooser.setCurrentDirectory(new File(classPath));
+			//后缀名过滤器
+			FileNameExtensionFilter filter = new FileNameExtensionFilter(
+			        "文本文件(*.txt)", "txt");
+			chooser.setFileFilter(filter);
+			//下面的方法将阻塞，直到【用户按下保存按钮且“文件名”文本框不为空】或【用户按下取消按钮】
+			int option = chooser.showSaveDialog(null);
+			if(option==JFileChooser.APPROVE_OPTION){	//假如用户选择了保存
+				// File file = new File(mainClass+".txt");
+				// chooser.setSelectedFile(file);
+				File file = chooser.getSelectedFile();
+			
+				String fname = chooser.getName(file);	//从文件名输入框中获取文件名
+				
+				//假如用户填写的文件名不带我们制定的后缀名，那么我们给它添上后缀
+				if(fname.indexOf(".txt")==-1){
+					file=new File(chooser.getCurrentDirectory(),fname+".txt");
+				}
+				try {
+					FileOutputStream fos = new FileOutputStream(file);
+					
+					//写文件操作……
+					fos.write(result.getText().getBytes());
+					fos.close();
+					
+				} catch (IOException e1) {
+					System.err.println("IO异常");
+					e1.printStackTrace();
+				}
+			}
 		}
 		else if (e.getSource()==radioBtn01) {
             methodNameText.setEditable(false);

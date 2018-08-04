@@ -10,6 +10,9 @@ linux:
 
 java -cp soot-2.5.0.jar soot.tools.CFGViewer --soot-classpath .:$JAVA_HOME\jre\lib\rt.jar THE_JAVA_CLASS_TO_ANALYSIS
 
+java soot.tools.CFGViewer -cp ./Test -pp Test2
+
+
 windows:
 
 java -cp soot-trunk.jar soot.tools.CFGViewer --soot-classpath .;"%JAVA_HOME%"\jre\lib\rt.jar THE_JAVA_CLASS_TO_ANALYSIS
@@ -17,3 +20,5 @@ java -cp soot-trunk.jar soot.tools.CFGViewer --soot-classpath .;"%JAVA_HOME%"\jr
 使用graphviz dot转换为图片PNG格式
 
 dot -Tpng -o xxx.png xxx.dot  
+
+
