@@ -49,12 +49,6 @@ public class AnalysisTransformer extends SceneTransformer
             //遍历类中的每一个方法
         	int rowIndex = 0;
 		
-			// XSSFWorkbook wb = new XSSFWorkbook();  
-			// XSSFSheet sheet = wb.createSheet("sheet1");
-			// XSSFRow row = sheet.createRow(rowIndex++);
-	  //       row.createCell(0).setCellValue("Basic Block");
-	  //       row.createCell(1).setCellValue("入口处活跃变量");
-	  //       row.createCell(2).setCellValue("出口处活跃变量");
 	        for (SootClass sootClass : Scene.v().getApplicationClasses()){
 	            for (SootMethod sootMethod : sootClass.getMethods())
 	            {
@@ -73,46 +67,6 @@ public class AnalysisTransformer extends SceneTransformer
 					
 					Iterator<Unit> unitIt = graph.iterator();
 
-					// int rowIndex = 0;
-				
-					// XSSFWorkbook wb = new XSSFWorkbook();  
-					// XSSFSheet sheet = wb.createSheet("sheet1");
-					// XSSFRow row = sheet.createRow(rowIndex++);
-			  //       row.createCell(0).setCellValue("Basic Block");
-			  //       row.createCell(1).setCellValue("入口处活跃变量");
-			  //       row.createCell(2).setCellValue("出口处活跃变量");
-					// while (unitIt.hasNext()) {
-					// 	Unit s = unitIt.next();
-					// 	row = sheet.createRow(rowIndex++);
-					// 	String entryVals = "";
-					// 	String exitVals = "";
-					// 	row.createCell(0).setCellValue(s.toString());
-
-					// 	FlowSet<Local> set = analysis.getFlowBefore(s);
-
-					// 	for (Local local: set) {
-					// 		entryVals += local + " ";
-					// 	}
-
-					// 	set = analysis.getFlowAfter(s);
-						
-					// 	System.out.print("]\t[exit: ");
-					// 	for (Local local: set) {
-					// 		exitVals += local + " ";
-					// 	}
-			  //           row.createCell(1).setCellValue(entryVals);
-			  //           row.createCell(2).setCellValue(exitVals);
-					// }
-					// try {
-					// 	FileOutputStream fileOut = new FileOutputStream("./result.xlsx");  
-					// 	// write this workbook to an Outputstream.  
-					// 	wb.write(fileOut);  
-					// 	fileOut.flush();  
-					// 	fileOut.close();  
-					// }
-					// catch (IOException ex) {
-					// 	System.out.print("IO exception occurred");
-					// }
 					output += sootMethod.getName() +"\n";
 					while (unitIt.hasNext()) {
 						Unit s = unitIt.next();
@@ -147,18 +101,13 @@ public class AnalysisTransformer extends SceneTransformer
 
 			int rowIndex = 0;
 		
-			// XSSFWorkbook wb = new XSSFWorkbook();  
-			// XSSFSheet sheet = wb.createSheet("sheet1");
-			// XSSFRow row = sheet.createRow(rowIndex++);
-	  //       row.createCell(0).setCellValue("Basic Block");
-	  //       row.createCell(1).setCellValue("入口处活跃变量");
-	  //       row.createCell(2).setCellValue("出口处活跃变量");
+
 
 			for (SootClass sootClass : Scene.v().getApplicationClasses()){
 				// 我们首先获取Main方法，因为我们的分析应当从Main方法开始
 				SootMethod sMethod = sootClass.getMethodByName(methodName);
 
-				// 获取当前Main方法中ActiveBody
+				// 获取当前方法中ActiveBody
 				// ActiveBody: The body of a method contains the statements inside that method as well as 
 				// the `local variable` definitions and the exception handlers.
 				UnitGraph graph = new BriefUnitGraph(sMethod.getActiveBody());
@@ -196,38 +145,7 @@ public class AnalysisTransformer extends SceneTransformer
 					output += "]\n";
 				}
 				output += "\n\n";
-				// while (unitIt.hasNext()) {
-				// 	Unit s = unitIt.next();
-				// 	row = sheet.createRow(rowIndex++);
-				// 	String entryVals = "";
-				// 	String exitVals = "";
-				// 	row.createCell(0).setCellValue(s.toString());
 
-				// 	FlowSet<Local> set = analysis.getFlowBefore(s);
-
-				// 	for (Local local: set) {
-				// 		entryVals += local + " ";
-				// 	}
-
-				// 	set = analysis.getFlowAfter(s);
-					
-				// 	System.out.print("]\t[exit: ");
-				// 	for (Local local: set) {
-				// 		exitVals += local + " ";
-				// 	}
-		  //           row.createCell(1).setCellValue(entryVals);
-		  //           row.createCell(2).setCellValue(exitVals);
-				// }
-				// try {
-				// 	FileOutputStream fileOut = new FileOutputStream("./result.xlsx");  
-				// 	// write this workbook to an Outputstream.  
-				// 	wb.write(fileOut);  
-				// 	fileOut.flush();  
-				// 	fileOut.close();  
-				// }
-				// catch (IOException ex) {
-				// 	System.out.print("IO exception occurred");
-				// }
 			}
 		}
 
