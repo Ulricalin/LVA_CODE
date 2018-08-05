@@ -31,7 +31,9 @@ public class LvaMain
 		//要分析的类别 1-analysis all method, 0-analysis one method
 		Boolean type = args[2].equals("true")? true : false;
 		//要分析方法名（analysis one method时有效）
-		String name = args[3];
+		String name = args[3]+" ";
+
+		for (int i = 4; i < args.length; i++) name+=args[i];
 
 		String[] sootArgs = {
 			"-cp", classPath, "-pp",

@@ -179,6 +179,10 @@ public class LvaRunner extends JFrame implements ActionListener{
 			if (radioBtn01.isSelected()) {
 				cmd += classPath+" "+mainClass+" true "+"all";
 			} else {
+				if (methodNameText.getText().equals("")) {
+					System.out.print("no method input!\n");
+					return;
+				}
 				cmd += classPath+" "+mainClass+" false "+ methodNameText.getText();
 			}
 			

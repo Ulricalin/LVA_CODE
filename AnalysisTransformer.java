@@ -105,7 +105,7 @@ public class AnalysisTransformer extends SceneTransformer
 
 			for (SootClass sootClass : Scene.v().getApplicationClasses()){
 				// 我们首先获取Main方法，因为我们的分析应当从Main方法开始
-				SootMethod sMethod = sootClass.getMethodByName(methodName);
+				SootMethod sMethod = sootClass.getMethod(methodName);
 
 				// 获取当前方法中ActiveBody
 				// ActiveBody: The body of a method contains the statements inside that method as well as 
