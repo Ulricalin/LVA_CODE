@@ -26,20 +26,25 @@ import java.io.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.KeyStroke;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.lang.ProcessBuilder;
 public class LvaRunner extends JFrame implements ActionListener{
-	JFrame f1 = new JFrame();
-	JFrame f2 = new JFrame();
-	JButton jb = new JButton("打开文件");
+	//JFrame f1 = new JFrame();
+	//JFrame this = new JFrame();
+	JMenuBar menubar;   //菜单条
+    JMenu menuFile; //菜单
+    JMenuItem itemOpen, itemSave;   //菜单项
+
 	//start analysis
 	JButton start = new JButton("start");
-	//return f1 to choose file
-	JButton back = new JButton("back");
 	//get the cfg
 	JButton cfg = new JButton("getCFG");
-	//save
-	JButton save = new JButton("save");
+
 	JRadioButton radioBtn01 = new JRadioButton("analysis all method");
     JRadioButton radioBtn02 = new JRadioButton("analysis one method");
     ButtonGroup btnGroup = new ButtonGroup();
@@ -65,38 +70,42 @@ public class LvaRunner extends JFrame implements ActionListener{
 	public LvaRunner(){
 		javaTxt = new JTextArea();
 		result = new JTextArea();
-		f1.setTitle("活跃变量");
-		f1.setSize(333, 288);
-		f1.setLocation(200,200);
 
-		f1.setVisible(true);
-		f1.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		menubar = new JMenuBar();
+        menuFile = new JMenu("文件(F)");
+        menuFile.setMnemonic('F');  //设置菜单的键盘操作方式是Alt + F键
+        itemOpen = new JMenuItem("打开(O)");
+        itemSave = new JMenuItem("保存(S)");
+        itemOpen.setActionCommand("open");
+        itemSave.setActionCommand("save");
+        itemSave.setEnabled(false);
+        itemOpen.addActionListener(this);
+        itemSave.addActionListener(this);
+        //设置菜单项的键盘操作方式是Ctrl+O和Ctrl+S键
+        KeyStroke Ctrl_cutKey = 
+                KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK);
+        itemOpen.setAccelerator(Ctrl_cutKey);
+        Ctrl_cutKey = 
+                KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK);
+        itemSave.setAccelerator(Ctrl_cutKey);
 
-		jb.setActionCommand("open");
-		jb.setBackground(Color.GREEN);
-		f1.getContentPane().add(jb, BorderLayout.SOUTH);
+        menuFile.add(itemOpen);
+        //menuFile.addSeparator();
+        menuFile.add(itemSave);
+        menubar.add(menuFile);  //将菜单添加到菜单条上
+        this.setJMenuBar(menubar);
 
-		jb.addActionListener(this);
 
-
-
-		f2.setTitle("活跃变量");
-		f2.setSize(1280,1024);
-		f2.setLocation(200,200);
-		//f2.setVisible(true);
-		f2.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.setTitle("活跃变量");
+		this.setSize(1280,1024);
+		this.setLocation(200,200);
+		this.setVisible(true);
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		
 		JPanel panel1 = new JPanel();
 
-		back.setActionCommand("back");
-        back.setBackground(Color.BLUE);
-		panel1.add(back);
-        back.addActionListener(this);
 
-		//panel.setLayout(new BorderLayout());
-        // 添加面板
-        //f2.add(panel);
 		// 创建按钮组，把两个单选按钮添加到该组
         btnGroup.add(radioBtn01);
         btnGroup.add(radioBtn02);
@@ -126,11 +135,6 @@ public class LvaRunner extends JFrame implements ActionListener{
 		panel1.add(cfg);
         cfg.addActionListener(this);
 
-        save.setActionCommand("save");
-        save.setBackground(Color.PINK);
-		panel1.add(save);
-        save.addActionListener(this);
-        save.setEnabled(false);
 
         JPanel panel2 = new JPanel();
         panel2.setLayout(new BorderLayout());
@@ -146,7 +150,7 @@ public class LvaRunner extends JFrame implements ActionListener{
         jSplitPane2.setLeftComponent(panel2);
         jSplitPane2.setRightComponent(panel3);
         jSplitPane2.setDividerLocation(600);
-        f2.setContentPane(jSplitPane1);
+        this.setContentPane(jSplitPane1);
 	}
 	public void actionPerformed(ActionEvent e){
 		if (e.getActionCommand().equals("open")){
@@ -167,11 +171,11 @@ public class LvaRunner extends JFrame implements ActionListener{
 			}
 			mainClass = f.getName();
 			mainClass = mainClass.substring(0, mainClass.lastIndexOf("."));
-			//JOptionPane.showMessageDialog(this, classPath, "活跃变量",JOptionPane.WARNING_MESSAGE); 
+
 			showJavaTxt();
-			//new LvaMain(classPath,mainClass,true,"fun1");
-			f2.setVisible(true);
-			f1.setVisible(false);
+
+			// this.setVisible(true);
+			// f1.setVisible(false);
 		} 
 		else if (e.getActionCommand().equals("start")){
 			Runtime run = Runtime.getRuntime();//返回与当前 Java 应用程序相关的运行时对象 
@@ -205,22 +209,11 @@ public class LvaRunner extends JFrame implements ActionListener{
 	        } catch (Exception e1) {  
 	            e1.printStackTrace();  
 	        } 
-			// LvaMain lva;
-			// if (radioBtn01.isSelected()) {
-			// 	lva = new LvaMain(classPath,mainClass,true,"");
-			// } else {
-			// 	lva = new LvaMain(classPath,mainClass,false,methodNameText.getText());
-			// }
-			// output = lva.getOutput();
+
 			result.setText(output);
-			save.setEnabled(true);
-			//f1.setVisible(true);
-			//f2.setVisible(false);
+			itemSave.setEnabled(true);
 		}
-		else if (e.getActionCommand().equals("back")){
-			f1.setVisible(true);
-			f2.setVisible(false);
-		}
+
 		else if (e.getActionCommand().equals("cfg")){
 			Runtime run = Runtime.getRuntime();//返回与当前 Java 应用程序相关的运行时对象 
 			String cmd = "java soot.tools.CFGViewer -cp " + classPath + " -pp " +  mainClass + " -d sootOutput/" + mainClass;
@@ -283,7 +276,6 @@ public class LvaRunner extends JFrame implements ActionListener{
 					+ "while read name; do\n"
 					+ "na=$(echo $name\".png\")\n"
 					+ "dot -Tpng -o $na $name\n"
-					+ "eog $na\n"
 					+ "done\n";
 			//System.out.println(cmd);
 	        try { 
@@ -313,6 +305,25 @@ public class LvaRunner extends JFrame implements ActionListener{
 	        } catch (Exception e1) {  
 	            e1.printStackTrace();  
 	        }
+	        cmd = "eog " + "sootOutput/" + mainClass + " *.png";
+	        try {  
+	            Process p = run.exec(cmd);// 启动另一个进程来执行命令  
+	            BufferedInputStream in = new BufferedInputStream(p.getInputStream());  
+	            BufferedReader inBr = new BufferedReader(new InputStreamReader(in));  
+	            String lineStr;  
+	            while ((lineStr = inBr.readLine()) != null)  
+	                //获得命令执行后在控制台的输出信息  
+	                System.out.println(lineStr);// 打印输出信息  
+	            //检查命令是否执行失败。  
+	            if (p.waitFor() != 0) {  
+	                if (p.exitValue() == 1)//p.exitValue()==0表示正常结束，1：非正常结束  
+	                    System.err.println("命令执行失败!");  
+	            }  
+	            inBr.close();  
+	            in.close();  
+	        } catch (Exception e1) {  
+	            e1.printStackTrace();  
+	        } 
 		}
 		else if (e.getActionCommand().equals("save")) {
 			//弹出文件选择框
