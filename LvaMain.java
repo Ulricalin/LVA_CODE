@@ -15,24 +15,26 @@ import soot.toolkits.graph.UnitGraph;
 import soot.jimple.internal.*;
 import java.util.*;
 import java.io.*; 
+
+
+
+
 public class LvaMain
 {
-	public static void main(String[] args)   {
+
+	public static void main(String[] args) {
 		
-		if (args.length < 2) {
-			System.out.println("Usage: java lva.LvaMain class_to_analyse class_path");
-			System.exit(1);
-		} else {
-			System.out.println("Analyzing class: "+args[0]);
-		}
+		//要分析的class路径
+		String classPath = args[0];
+		//要分析的class名
+		String mainClass = args[1];
+		//要分析的类别 1-analysis all method, 0-analysis one method
+		Boolean type = args[2].equals("true")? true : false;
+		//要分析方法名（analysis one method时有效）
+		String name = args[3]+" ";
 
-		String mainClass = args[0];
+		for (int i = 4; i < args.length; i++) name+=args[i];
 
-
-		String classPath = args[1]; // 此处的路径是你待分析的类所在的路径
-		
-
-		//Set up arguments for Soot
 		String[] sootArgs = {
 			"-cp", classPath, "-pp",
 			"-w", 						// 执行整个程序分析
@@ -42,11 +44,14 @@ public class LvaMain
 			mainClass 
 		};
 
-		AnalysisTransformer analysisTransformer = new AnalysisTransformer();
+		AnalysisTransformer analysisTransformer = new AnalysisTransformer(type,name);
+
 		PackManager.v().getPack("wjtp").add(new Transform("wjtp.dfa", analysisTransformer));
 
 		// 调用sootMain
 		soot.Main.main(sootArgs);
 
+		System.out.print(analysisTransformer.getOutput());
 	}
+
 }
